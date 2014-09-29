@@ -1,5 +1,6 @@
 class Shape {
   int position;
+  int lol;
   int[] crd = new int[12];
   
   Shape(int lexIndex, int p) {
