@@ -8,24 +8,33 @@ SQLite db;
 //int display = 3;
 
 int[][] allCrd;
+User theUser = new User();
+Shape u1, u2, u3;
+
+//temporary storage of shape IDs - if shape selected!
+int[] tempShapeIDs = new int[9];
 
 void setup() {
   //size(250*scale,100*scale*display)
-  size(600,600);
+  size(600,720);
   noStroke();
   smooth();
-  
+  //current user object
   dbImportValules();
-  
 }
 
 void draw() {  
   background(255);
+  
+  int i;
+  //while the user can still select shapes
+  if (theUser.currentSpot < 3) {
   //draw gradients
-  drawGradients((20*3),(20*3),40.0*3,40.0*3);
+  drawGradients((20*3),(20*3),40.0*3,40.0*3,3);
+  //counter for tempShapeIDs index
+  int countID = 0;
   //set is row COUNTER - indicate current row
   int set = 0;
-  int i;
   //DISPLAY 3 ROWS, 9 shapes total
   while(set < 3) {
     int[] ran = new int[3];
@@ -35,14 +44,44 @@ void draw() {
       ran[i] = int(random(0,38));
     }    
     Shape s1 = new Shape(ran[0],1);
+    tempShapeIDs[countID] = ran[0];
+    countID++;
     Shape s2 = new Shape(ran[1],2);
+    tempShapeIDs[countID] = ran[1];
+    countID++;
     Shape s3 = new Shape(ran[2],3);
+    tempShapeIDs[countID] = ran[2];
+    countID++;
     s1.display(set);
     s2.display(set);
     s3.display(set);
     set++;
   }
+  
+  //see if any shapes have been selected, if so, display at bottom
+  for (i = 0; i < 3; i++) {
+    if (theUser.logo[i] != -1) {
+      drawMiniGradients((60*3)+(i*90),(210*3),20.0*3,20.0*3);
+      Shape u1 = new Shape(theUser.logo[i],i+1);
+      u1.displayMini();
+    }
+  }
+
   noLoop();
+  }
+  
+  //once all three shapes are selected, blank window
+  else {
+    background(255);
+    drawGradients((20*3),(20*3),40.0*3,40.0*3,1);
+    for (i = 0; i < 3; i++) {
+      if (theUser.logo[i] != -1) {  
+        Shape u1 = new Shape(theUser.logo[i],i+1);
+        u1.display(0);
+      }
+    }
+    noLoop();
+  }
 }
 
 void dbImportValules() {
@@ -131,20 +170,146 @@ void dbImportValules() {
   }
 }
 
+//SCALE = 3!!!
 void mousePressed() {
-  redraw();
+  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[0]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
+  if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[1]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
+  if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[2]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
+  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 80*3 && mouseY <= 120*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[3]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
+  if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 80*3 && mouseY <= 120*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[4]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
+  if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 80*3 && mouseY <= 120*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[5]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
+  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 140*3 && mouseY <= 180*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[6]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
+  if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 140*3 && mouseY <= 180*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[7]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
+  if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 140*3 && mouseY <= 180*3) {
+    if (theUser.currentSpot < 3) {
+      theUser.setLogo(theUser.currentSpot,tempShapeIDs[8]);
+    }
+    print("current logo values are: ");
+    int[] currentLogo = theUser.getLogo();
+    //check logo values
+    for (int i = 0; i < 3; i++) {
+      print(currentLogo[i] + " ");
+    }
+    println();
+    redraw();
+  }
+  
 }
 
 //background gradient, left to right
 //*3 is SCALE BY 3
-void drawGradients(int x, int y, float w, float h) {
+void drawGradients(int x, int y, float w, float h, int rows) {
   noFill();
   int j, k;
   int xShift, yShift; 
   int xStart = x;
   int yStart = y;
   //for each row of shapes
-  for (j = 0; j < 3; j++) {
+  for (j = 0; j < rows; j++) {
     yShift = j*60*3;
     y = yStart + yShift;
     //for each shape in the row
@@ -159,4 +324,18 @@ void drawGradients(int x, int y, float w, float h) {
       }
     }
   }
-} 
+}
+
+void drawMiniGradients(int x, int y, float w, float h) {
+  noFill();
+  int j, k;
+  int xShift, yShift; 
+  int xStart = x;
+  int yStart = y;   
+  for (float i = x; i < x+w; i+=.1) {
+    float inter = map(i, x, x+w, 0, 1);
+    color c = lerpColor(color(200,0,255), color(255,255,255), inter);
+    stroke(c);
+    line(i , y, i, y+h);
+  }
+}
