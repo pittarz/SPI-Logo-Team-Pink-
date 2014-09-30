@@ -116,7 +116,7 @@ int dbImportValules() {
   int val;
   int count = 0;
   //crappy database of values for testing
-  db = new SQLite(this, "testDB.db");
+  db = new SQLite(this, "SPI_Base");
   
   //to confirm that database is accessible and opened successfully
   if (db.connect()) {
@@ -127,7 +127,7 @@ int dbImportValules() {
     }
     
     //determine number of rows (shapes) in lexicon table
-    String query = "SELECT COUNT(*) As \"count\" FROM LEXICON";
+    String query = "SELECT COUNT(*) As \"count\" FROM TriangleShape";
     db.query(query);
     count = db.getInt("count");
     
@@ -136,62 +136,62 @@ int dbImportValules() {
     
     //get values from database for EACH SHAPE IN TABLE and load into array in memory
     for (int i = 0; i < count; i++) {
-      query = "SELECT t1x1 As \"t1x1\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT x1_1 As \"t1x1\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t1x1");
       allCrd[i][0] = val;
       
-      query = "SELECT t1y1 As \"t1y1\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT y1_1 As \"t1y1\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t1y1");
       allCrd[i][1] = val;
       
-      query = "SELECT t1x2 As \"t1x2\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT x1_2 As \"t1x2\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t1x2");
       allCrd[i][2] = val;
       
-      query = "SELECT t1y2 As \"t1y2\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT y1_2 As \"t1y2\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t1y2");
       allCrd[i][3] = val;
       
-      query = "SELECT t1x3 As \"t1x3\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT x1_3 As \"t1x3\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t1x3");
       allCrd[i][4] = val;
       
-      query = "SELECT t1y3 As \"t1y3\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT y1_3 As \"t1y3\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t1y3");
       allCrd[i][5] = val;
       
-      query = "SELECT t2x1 As \"t2x1\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT x2_1 As \"t2x1\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t2x1");
       allCrd[i][6] = val;
       
-      query = "SELECT t2y1 As \"t2y1\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT y2_1 As \"t2y1\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t2y1");
       allCrd[i][7] = val;
       
-      query = "SELECT t2x2 As \"t2x2\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT x2_2 As \"t2x2\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t2x2");
       allCrd[i][8] = val;
       
-      query = "SELECT t2y2 As \"t2y2\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT y2_2 As \"t2y2\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t2y2");
       allCrd[i][9] = val;
       
-      query = "SELECT t2x3 As \"t2x3\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT x2_3 As \"t2x3\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t2x3");
       allCrd[i][10] = val;
       
-      query = "SELECT t2y3 As \"t2y3\" FROM LEXICON WHERE ID = " + String.format("%d",i+1);
+      query = "SELECT y2_3 As \"t2y3\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
       db.query(query);
       val = db.getInt("t2y3");
       allCrd[i][11] = val;
@@ -213,136 +213,134 @@ void mousePressed() {
       redraw();
     }
   }
-  
-  
+   
   if (viewAlphabet == false) {
-  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[0]);
+    if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[0]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
   
-  if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 20*3 && mouseY <= 60*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[1]);
+    if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[1]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
   
-  if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 20*3 && mouseY <= 60*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[2]);
+    if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[2]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
   
-  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 80*3 && mouseY <= 120*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[3]);
+    if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 80*3 && mouseY <= 120*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[3]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
   
-  if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 80*3 && mouseY <= 120*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[4]);
+    if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 80*3 && mouseY <= 120*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[4]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
   
-  if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 80*3 && mouseY <= 120*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[5]);
+    if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 80*3 && mouseY <= 120*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[5]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
   
-  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 140*3 && mouseY <= 180*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[6]);
+    if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 140*3 && mouseY <= 180*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[6]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
   
-  if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 140*3 && mouseY <= 180*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[7]);
+    if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 140*3 && mouseY <= 180*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[7]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
   
-  if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 140*3 && mouseY <= 180*3) {
-    if (theUser.currentSpot < 3) {
-      theUser.setLogo(theUser.currentSpot,tempShapeIDs[8]);
+    if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 140*3 && mouseY <= 180*3) {
+      if (theUser.currentSpot < 3) {
+        theUser.setLogo(theUser.currentSpot,tempShapeIDs[8]);
+      }
+      print("current logo values are: ");
+      int[] currentLogo = theUser.getLogo();
+      //check logo values
+      for (int i = 0; i < 3; i++) {
+        print(currentLogo[i] + " ");
+      }
+      println();
+      redraw();
     }
-    print("current logo values are: ");
-    int[] currentLogo = theUser.getLogo();
-    //check logo values
-    for (int i = 0; i < 3; i++) {
-      print(currentLogo[i] + " ");
-    }
-    println();
-    redraw();
-  }
-  }
-  
+  }  
 }
 
 //background gradient, left to right
