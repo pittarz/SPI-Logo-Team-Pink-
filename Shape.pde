@@ -3,6 +3,10 @@ class Shape {
   int position;
   int[] crd = new int[12];
   
+  //special shape object for displaying alphabet!
+  Shape() {
+  }
+  
   Shape(int ind, int p) {
     lexIndex = ind;
     position = p;
@@ -46,10 +50,40 @@ class Shape {
     }
   }
   
+  void displayAlphabet(int lexSize) {
+    int index = 0;
+    int xShift, yShift;
+    int rows = lexSize/6;
+    if (lexSize % 6 != 0) {
+      rows++;
+    }
+    for (int j = 0; j < rows; j++) {
+      yShift = j*30;
+      for (int i = 0; i < 6; i++) {
+        xShift = i*30;
+        crd = getShapeCrd(index);
+        for (int k = 0; k < crd.length; k++) {
+          //tiny shapes, SCALE BY 1/2, but also by 3!!!
+          crd[k] = (crd[k]/2)+5;
+          crd[k] *= 3;
+        }
+        stroke(0,100,255);
+        fill(0,100,255);
+        triangle(crd[0]+(xShift*3),crd[1]+(yShift*3),crd[2]+(xShift*3),crd[3]+(yShift*3),crd[4]+(xShift*3),crd[5]+(yShift*3)); 
+        stroke(0,255,255);
+        fill(0,255,255);
+        triangle(crd[6]+(xShift*3),crd[7]+(yShift*3),crd[8]+(xShift*3),crd[9]+(yShift*3),crd[10]+(xShift*3),crd[11]+(yShift*3));
+        index++;
+        if (index == lexSize) {
+          break;
+        }
+      }
+    }
+  }
   
   void displayMini() {
     for (int i = 0; i < crd.length; i++) {
-      //tiny, SCALE IN 1/2, but also by 3!!!
+      //tiny, SCALE BY 1/2, but also by 3!!!
       crd[i] *= 3;
       crd[i] /= 2;
     }
