@@ -11,81 +11,110 @@ int[][] allCrd;
 User theUser = new User();
 Shape u1, u2, u3;
 
+//number of shapes in alphabet
+int lexSize;
+
 //temporary storage of shape IDs - if shape selected!
 int[] tempShapeIDs = new int[9];
+
+//boolean flags for different modes of operation
+boolean viewAlphabet = false;
 
 void setup() {
   //size(250*scale,100*scale*display)
   size(600,720);
+  frame.setResizable(true);
   noStroke();
   smooth();
   //current user object
-  dbImportValules();
+  lexSize = dbImportValules();
 }
 
 void draw() {  
   background(255);
-  
   int i;
-  //while the user can still select shapes
-  if (theUser.currentSpot < 3) {
-  //draw gradients
-  drawGradients((20*3),(20*3),40.0*3,40.0*3,3);
-  //counter for tempShapeIDs index
-  int countID = 0;
-  //set is row COUNTER - indicate current row
-  int set = 0;
-  //DISPLAY 3 ROWS, 9 shapes total
-  while(set < 3) {
-    int[] ran = new int[3];
-    for (i = 0; i < 3; i++) {
-      //NEED TO KNOW NUMBER OF ITEMS IN DATABASE, RIGHT NOW HARDCODED VALUE!!!
-      //replace 38 with number of available shapes in database
-      ran[i] = int(random(0,38));
-    }    
-    Shape s1 = new Shape(ran[0],1);
-    tempShapeIDs[countID] = ran[0];
-    countID++;
-    Shape s2 = new Shape(ran[1],2);
-    tempShapeIDs[countID] = ran[1];
-    countID++;
-    Shape s3 = new Shape(ran[2],3);
-    tempShapeIDs[countID] = ran[2];
-    countID++;
-    s1.display(set);
-    s2.display(set);
-    s3.display(set);
-    set++;
+  
+  if (viewAlphabet) {
+    fill(0,100,255);
+    noStroke();
+    rect(6*3,3*3,26*3,5*3,7);
+    fill(255);
+    textSize(12);
+    text("Create Logo", 7*3,7*3);
+    Shape a1 = new Shape();
+    a1.displayAlphabet(lexSize);
   }
   
-  //see if any shapes have been selected, if so, display at bottom
-  for (i = 0; i < 3; i++) {
-    if (theUser.logo[i] != -1) {
-      drawMiniGradients((60*3)+(i*90),(210*3),20.0*3,20.0*3);
-      Shape u1 = new Shape(theUser.logo[i],i+1);
-      u1.displayMini();
-    }
-  }
-
-  noLoop();
-  }
-  
-  //once all three shapes are selected, blank window
   else {
-    background(255);
-    drawGradients((20*3),(20*3),40.0*3,40.0*3,1);
-    for (i = 0; i < 3; i++) {
-      if (theUser.logo[i] != -1) {  
-        Shape u1 = new Shape(theUser.logo[i],i+1);
-        u1.display(0);
+    fill(0,100,255);
+    noStroke();
+    rect(6*3,3*3,30*3,5*3,7);
+    fill(255);
+    textSize(12);
+    text("View Alphabet", 7*3,7*3);
+    //while the user can still select shapes
+    if (theUser.currentSpot < 3) {
+      //draw gradients
+      drawGradients((20*3),(20*3),40.0*3,40.0*3,3);
+      //counter for tempShapeIDs index
+      int countID = 0;
+      //set is row COUNTER - indicate current row
+      int set = 0;
+      //DISPLAY 3 ROWS, 9 shapes total
+      while(set < 3) {
+        int[] ran = new int[3];
+        for (i = 0; i < 3; i++) {
+          //NEED TO KNOW NUMBER OF ITEMS IN DATABASE, RIGHT NOW HARDCODED VALUE!!!
+          //replace 38 with number of available shapes in database
+          ran[i] = int(random(0,38));
+        }    
+        Shape s1 = new Shape(ran[0],1);
+        tempShapeIDs[countID] = ran[0];
+        countID++;
+        Shape s2 = new Shape(ran[1],2);
+        tempShapeIDs[countID] = ran[1];
+        countID++;
+        Shape s3 = new Shape(ran[2],3);
+        tempShapeIDs[countID] = ran[2];
+        countID++;
+        s1.display(set);
+        s2.display(set);
+        s3.display(set);
+        set++;
       }
+  
+      //see if any shapes have been selected, if so, display at bottom
+      for (i = 0; i < 3; i++) {
+        if (theUser.logo[i] != -1) {
+          drawMiniGradients((60*3)+(i*90),(210*3),20.0*3,20.0*3);
+          Shape u1 = new Shape(theUser.logo[i],i+1);
+          u1.displayMini();
+        }
+      }
+
+      noLoop();
+      }
+  
+    //once all three shapes are selected, blank window
+    else {
+      frame.setSize(600,300);
+      size(600,300);
+      background(255);
+      drawGradients((20*3),(20*3),40.0*3,40.0*3,1);
+      for (i = 0; i < 3; i++) {
+        if (theUser.logo[i] != -1) {  
+          Shape u1 = new Shape(theUser.logo[i],i+1);
+          u1.display(0);
+        }
+      }
+      noLoop();
     }
-    noLoop();
   }
 }
 
-void dbImportValules() {
+int dbImportValules() {
   int val;
+  int count = 0;
   //crappy database of values for testing
   db = new SQLite(this, "testDB.db");
   
@@ -100,7 +129,7 @@ void dbImportValules() {
     //determine number of rows (shapes) in lexicon table
     String query = "SELECT COUNT(*) As \"count\" FROM LEXICON";
     db.query(query);
-    int count = db.getInt("count");
+    count = db.getInt("count");
     
     //ASSUMED TRIANGLE - 12 coordinate values
     allCrd = new int[count][12];
@@ -168,10 +197,25 @@ void dbImportValules() {
       allCrd[i][11] = val;
     }
   }
+  return count;
 }
 
 //SCALE = 3!!!
 void mousePressed() {
+  //VIEW ALPHABET BUTTON
+  if (mouseX >= 18 && mouseX <= 98 && mouseY >= 9 && mouseY <= 24) {
+    if (viewAlphabet) {
+      viewAlphabet = false;
+      redraw();
+    }
+    else {
+      viewAlphabet = true;
+      redraw();
+    }
+  }
+  
+  
+  if (viewAlphabet == false) {
   if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3) {
     if (theUser.currentSpot < 3) {
       theUser.setLogo(theUser.currentSpot,tempShapeIDs[0]);
@@ -296,6 +340,7 @@ void mousePressed() {
     }
     println();
     redraw();
+  }
   }
   
 }
