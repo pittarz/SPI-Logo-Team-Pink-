@@ -34,6 +34,7 @@ void draw() {
   background(255);
   int i;
   
+  //The View Alphabet Tab 
   if (viewAlphabet) {
     fill(0,100,255);
     noStroke();
@@ -45,6 +46,7 @@ void draw() {
     a1.displayAlphabet(lexSize);
   }
   
+  // Create Logo Tab
   else {
     fill(0,100,255);
     noStroke();
@@ -201,7 +203,7 @@ int dbImportValules() {
 }
 
 //SCALE = 3!!!
-void mousePressed() {
+void mouseClicked() {
   //VIEW ALPHABET BUTTON
   if (mouseX >= 18 && mouseX <= 98 && mouseY >= 9 && mouseY <= 24) {
     if (viewAlphabet) {
@@ -381,4 +383,24 @@ void drawMiniGradients(int x, int y, float w, float h) {
     stroke(c);
     line(i , y, i, y+h);
   }
+}
+
+void keyPressed()
+{  
+  if(key == 32)
+  {
+    redraw();
+  }
+  
+  if(key == 114)
+  {
+   for(int i = 0; i < 3; i++)
+    {
+      theUser.logo[i] = -1;
+    }
+    theUser.currentSpot = 0;
+    frame.setSize(600,765);
+    //size(600,765);
+    redraw();
+  }   
 }
