@@ -19,6 +19,16 @@ int[] tempShapeIDs = new int[9];
 
 //boolean flags for different modes of operation
 boolean viewAlphabet = false;
+boolean stringToShape = false;
+
+//for string-to-shape feature
+PFont f;
+// Variable to store text currently being typed
+String typing = "";
+// Variable to store saved text when return is hit
+String saved = "";
+//ASCII bin values.
+int ASCIIsum[]=new int[3];
 
 void setup() {
   //size(250*scale,100*scale*display)
@@ -34,7 +44,6 @@ void draw() {
   background(255);
   int i;
   
-  //The View Alphabet Tab 
   if (viewAlphabet) {
     fill(0,100,255);
     noStroke();
@@ -46,14 +55,29 @@ void draw() {
     a1.displayAlphabet(lexSize);
   }
   
-  // Create Logo Tab
+  else if (stringToShape) {
+    f = createFont("Arial",16,true);
+    textFont(f);
+    fill(0);
+    // Display everything
+    text("Click in the window and type, \n hit enter to see the value. ", 25, 40);
+  }
+  
   else {
+    //view alphabet button
     fill(0,100,255);
     noStroke();
     rect(6*3,3*3,30*3,5*3,7);
     fill(255);
     textSize(12);
     text("View Alphabet", 7*3,7*3);
+    //string-to-shape button
+    fill(0,100,255);
+    noStroke();
+    rect(50*3,3*3,35*3,5*3,7);
+    fill(255);
+    textSize(12);
+    text("String-to-Shape", 51*3,7*3);
     //while the user can still select shapes
     if (theUser.currentSpot < 3) {
       //draw gradients
@@ -117,7 +141,7 @@ void draw() {
 int dbImportValules() {
   int val;
   int count = 0;
-  //crappy database of values for testing
+  //JP's database
   db = new SQLite(this, "SPI_Base");
   
   //to confirm that database is accessible and opened successfully
@@ -127,6 +151,9 @@ int dbImportValules() {
       String tableName = db.getString("Name");
       println(tableName);
     }
+    
+    //READ IN EXISTING USER / LOGO DATA
+    
     
     //determine number of rows (shapes) in lexicon table
     String query = "SELECT COUNT(*) As \"count\" FROM TriangleShape";
@@ -215,8 +242,20 @@ void mouseClicked() {
       redraw();
     }
   }
+  
+  //STRING-TO-SHAPE BUTTON
+  if (mouseX >= 150 && mouseX <= 255 && mouseY >= 9 && mouseY <= 24) {
+    if (stringToShape) {
+      stringToShape = false;
+      redraw();
+    }
+    else {
+      stringToShape = true;
+      redraw();
+    }
+  }
    
-  if (viewAlphabet == false) {
+  if (viewAlphabet == false && stringToShape == false) {
     if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3) {
       if (theUser.currentSpot < 3) {
         theUser.setLogo(theUser.currentSpot,tempShapeIDs[0]);
@@ -385,22 +424,57 @@ void drawMiniGradients(int x, int y, float w, float h) {
   }
 }
 
-void keyPressed()
-{  
-  if(key == 32)
-  {
-    redraw();
-  }
-  
-  if(key == 114)
-  {
-   for(int i = 0; i < 3; i++)
-    {
-      theUser.logo[i] = -1;
+void keyPressed() {
+  //NEED TO MAKE SURE stringToShape is TRUE
+  if (stringToShape) {
+    //if delete key is pressed without any string yet then ignore it
+    if (keyCode == BACKSPACE) {
+      if (typing.length() > 0) {
+        typing = typing.substring(0, typing.length()-1);
+      }
+      if (typing.length()==0)
+      { 
+      }
     }
-    theUser.currentSpot = 0;
-    frame.setSize(600,765);
-    //size(600,765);
-    redraw();
-  }   
+    //if return key is hit then save the string and change asciisum to 0 before summing up again
+    else {
+      if (key == '\n' ) {
+        saved = typing;
+        ASCIIsum[0]=0;
+        ASCIIsum[1]=0;
+        ASCIIsum[2]=0;
+        for (int i=0; i<saved.length();i++) {
+          ASCIIsum[i%3]=saved.charAt(i)+ASCIIsum[i%3];
+        }
+        //each bin must b less than 38 (0-37)
+        ASCIIsum[0]=ASCIIsum[0]%38;
+        ASCIIsum[1]=ASCIIsum[1]%38;
+        ASCIIsum[2]=ASCIIsum[2]%38;
+        typing = "";
+        printArray(ASCIIsum);
+      } 
+      else {
+        // Each character typed by the user is added to the end of the String variable.
+        textFont(f);
+        typing = typing + key;
+        text(typing,200,90);
+        text(saved,300,130);
+      }
+    }
+  }
+  //NOT IN STRING TO SHAPE MODE
+  else {
+    if(key == 32) {
+      redraw();
+    }
+    else if(key == 114) {
+      for(int i = 0; i < 3; i++) {
+        theUser.logo[i] = -1;
+      }
+      theUser.currentSpot = 0;
+      frame.setSize(600,765);
+      //size(600,765);
+      redraw();
+    }
+  }
 }
