@@ -1,0 +1,62 @@
+
+PFont f;
+
+// Variable to store text currently being typed
+String typing = "";
+
+// Variable to store saved text when return is hit
+String saved = "";
+//ASCII bin values. 
+int ASCIIsum[]=new int[3];
+
+void setup() {
+  size(300,200);
+  f = createFont("Arial",16,true);
+}
+
+void draw() {
+  background(255);
+  
+  // Set the font and fill for text
+  textFont(f);
+  fill(0);
+  
+  // Display everything
+  text("Click in the window and type, \n hit enter to see the value. ", 25, 40);
+  text(typing,25,90);
+  text(saved,25,130);
+  
+  printArray(ASCIIsum);
+  
+}
+
+void keyPressed() {
+  //if delete key is pressed without any string yet then ignore it
+if (keyCode == BACKSPACE) {
+   if (typing.length() > 0){
+ typing = typing.substring(0, typing.length()-1);
+}
+  if (typing.length()==0)
+  {  }
+}
+//if return key is hit then save the string and change asciisum to 0 before summing up again
+else{
+if (key == '\n' ) {
+    saved = typing;
+      ASCIIsum[0]=0;
+  ASCIIsum[1]=0;
+  ASCIIsum[2]=0;
+    for(int i=0; i<saved.length();i++)
+  {
+      ASCIIsum[i%3]=saved.charAt(i)+ASCIIsum[i%3];
+  }//each bin must b less than 38 (0-37)
+  ASCIIsum[0]=ASCIIsum[0]%38;
+  ASCIIsum[1]=ASCIIsum[1]%38;
+  ASCIIsum[2]=ASCIIsum[2]%38;
+    typing = ""; 
+  } else {
+      // Each character typed by the user is added to the end of the String variable.
+    typing = typing + key; 
+  }}
+
+}
