@@ -20,9 +20,13 @@ int[] tempShapeIDs = new int[9];
 //boolean flags for different modes of operation
 boolean viewAlphabet = false;
 boolean stringToShape = false;
+//to indicate that stringToShape function has completed execution
+boolean stsComplete = false;
+//mode indicates user has found a logo, in mode where can save or start over
+boolean logoSelected = false;
+boolean logoAvailable = false;
+boolean logoSaved = false;
 
-//for string-to-shape feature
-PFont f;
 // Variable to store text currently being typed
 String typing = "";
 // Variable to store saved text when return is hit
@@ -44,7 +48,8 @@ void draw() {
   background(255);
   int i;
   
-  if (viewAlphabet) {
+  //in view alphabet mode
+  if (viewAlphabet && !stringToShape && !logoSelected) {
     fill(0,100,255);
     noStroke();
     rect(6*3,3*3,26*3,5*3,7);
@@ -55,16 +60,48 @@ void draw() {
     a1.displayAlphabet(lexSize);
   }
   
-  else if (stringToShape) {
-    f = createFont("Arial",16,true);
-    textFont(f);
+  //in stringToShape mode
+  else if (stringToShape && !viewAlphabet && !logoSelected) {
+    //button for create logo mode
+    fill(0,100,255);
+    noStroke();
+    rect(6*3,3*3,26*3,5*3,7);
+    fill(255);
+    textSize(12);
+    text("Create Logo", 7*3,7*3);
+    //stringToShape mode controls
     fill(0);
     // Display everything
-    text("Click in the window and type, \n hit enter to see the value. ", 25, 40);
+    textSize(14);
+    text("Click in the box and type, hit enter to see the value:", 120, 220);
+    //draw textbox outline
+    noFill();
+    stroke(0);
+    rect(120,230,350,50);
+    textSize(12);
+    text(typing,125,235,340,45);
+    if (stsComplete) {
+      drawGradients((20*3),(20*3),40.0*3,40.0*3,1);
+      for (i = 0; i < 3; i++) {
+        Shape u1 = new Shape(ASCIIsum[i],i+1);
+        u1.display(0);
+      }
+      noLoop();
+    }
   }
   
-  else {
-    //view alphabet button
+  //in create logo mode, all boolean mode flags are false
+  else if (!viewAlphabet && !stringToShape) {
+    //means we are running the program again, after having saved a previous logo
+    //clear user object data
+    if (logoSaved) {
+      for (i = 0; i < 3; i++) {
+        theUser.logo[i] = -1;
+      }
+      theUser.currentSpot = 0;
+      logoSaved = false;
+      
+    }
     fill(0,100,255);
     noStroke();
     rect(6*3,3*3,30*3,5*3,7);
@@ -74,10 +111,10 @@ void draw() {
     //string-to-shape button
     fill(0,100,255);
     noStroke();
-    rect(50*3,3*3,35*3,5*3,7);
+    rect(37*3,3*3,34*3,5*3,7);
     fill(255);
     textSize(12);
-    text("String-to-Shape", 51*3,7*3);
+    text("String-to-Shape", 38*3,7*3);
     //while the user can still select shapes
     if (theUser.currentSpot < 3) {
       //draw gradients
@@ -117,15 +154,28 @@ void draw() {
           u1.displayMini();
         }
       }
-
       noLoop();
-      }
+    }
   
     //once all three shapes are selected, blank window
     else {
-      frame.setSize(600,300);
-      size(600,300);
-      background(255);
+      //indicate we are in logoSelected mode
+      logoSelected = true;
+      //draw save image button
+      fill(0,100,255);
+      noStroke();
+      rect(6*3,3*3,52*3,5*3,7);
+      fill(255);
+      textSize(12);
+      text("Save Logo / Export Image", 7*3,7*3);
+      fill(0);
+      textSize(14);
+      text("To save and export your logo, enter your SUNY POLY UNumber in \nthe box below and click \"Save Logo / Export Image.\"", 80, 220);
+      noFill();
+      stroke(0);
+      rect(120,260,350,50);
+      textSize(12);
+      text(typing,125,255,340,45);
       drawGradients((20*3),(20*3),40.0*3,40.0*3,1);
       for (i = 0; i < 3; i++) {
         if (theUser.logo[i] != -1) {  
@@ -133,6 +183,9 @@ void draw() {
           u1.display(0);
         }
       }
+      //check if logo is available...db queries
+      //for now, assume that it is
+      logoAvailable = true;
       noLoop();
     }
   }
@@ -151,14 +204,12 @@ int dbImportValules() {
       String tableName = db.getString("Name");
       println(tableName);
     }
-    
     //READ IN EXISTING USER / LOGO DATA
-    
-    
     //determine number of rows (shapes) in lexicon table
     String query = "SELECT COUNT(*) As \"count\" FROM TriangleShape";
     db.query(query);
     count = db.getInt("count");
+    lexSize = count;
     
     //ASSUMED TRIANGLE - 12 coordinate values
     allCrd = new int[count][12];
@@ -231,31 +282,58 @@ int dbImportValules() {
 
 //SCALE = 3!!!
 void mouseClicked() {
-  //VIEW ALPHABET BUTTON
-  if (mouseX >= 18 && mouseX <= 98 && mouseY >= 9 && mouseY <= 24) {
-    if (viewAlphabet) {
+  //this means we are in view alphabet mode
+  if (viewAlphabet && !stringToShape && !logoSelected) {
+    //CREATE LOGO BUTTON
+    if (mouseX >= 18 && mouseX <= 96 && mouseY >= 9 && mouseY <= 24) {
       viewAlphabet = false;
-      redraw();
-    }
-    else {
-      viewAlphabet = true;
       redraw();
     }
   }
   
-  //STRING-TO-SHAPE BUTTON
-  if (mouseX >= 150 && mouseX <= 255 && mouseY >= 9 && mouseY <= 24) {
-    if (stringToShape) {
+  //this means we are in stringToShape mode
+  else if (stringToShape && !viewAlphabet && !logoSelected) {
+    //CREATE LOGO BUTTON
+    if (mouseX >= 18 && mouseX <= 96 && mouseY >= 9 && mouseY <= 24) {
+      viewAlphabet = false;
       stringToShape = false;
       redraw();
     }
-    else {
+  }
+  
+  //viewing selected logo
+  else if (logoSelected && !stringToShape && !viewAlphabet) {
+    //if (logoAvailable) {
+      //clicked the SAVE LOGO BUTTON
+      if (mouseX >= 18 && mouseX <= 90 && mouseY >= 9 && mouseY <= 24) {
+        saveLogo();
+        logoSelected = false;
+        logoAvailable = false;
+        logoSaved = true;
+        viewAlphabet = false;
+        stringToShape = false;
+        redraw();
+      }
+    //}
+    //else {
+      //display some stuff about how logo is not available, try again
+    //}
+  }
+  
+  //this means we are in create logo mode
+  else if (!viewAlphabet && !stringToShape && !logoSelected) {
+    //VIEW ALPHABET BUTTON
+    if (mouseX >= 18 && mouseX <= 108 && mouseY >= 9 && mouseY <= 24) {
+      viewAlphabet = true;
+      redraw();
+    }
+    
+    //STRING-TO-SHAPE BUTTON
+    if (mouseX >= 111 && mouseX <= 213 && mouseY >= 9 && mouseY <= 24) {
       stringToShape = true;
       redraw();
     }
-  }
-   
-  if (viewAlphabet == false && stringToShape == false) {
+    
     if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3) {
       if (theUser.currentSpot < 3) {
         theUser.setLogo(theUser.currentSpot,tempShapeIDs[0]);
@@ -381,7 +459,7 @@ void mouseClicked() {
       println();
       redraw();
     }
-  }  
+  }
 }
 
 //background gradient, left to right
@@ -425,56 +503,85 @@ void drawMiniGradients(int x, int y, float w, float h) {
 }
 
 void keyPressed() {
-  //NEED TO MAKE SURE stringToShape is TRUE
+  //either in stringToShape mode or logoSelected Mode
   if (stringToShape) {
+    //not finished typing (user has not hit enter)
+    stsComplete = false;
     //if delete key is pressed without any string yet then ignore it
     if (keyCode == BACKSPACE) {
       if (typing.length() > 0) {
         typing = typing.substring(0, typing.length()-1);
       }
-      if (typing.length()==0)
-      { 
+      //do nothing - no characters
+      else if (typing.length() == 0) { 
       }
     }
     //if return key is hit then save the string and change asciisum to 0 before summing up again
     else {
-      if (key == '\n' ) {
-        saved = typing;
-        ASCIIsum[0]=0;
-        ASCIIsum[1]=0;
-        ASCIIsum[2]=0;
-        for (int i=0; i<saved.length();i++) {
-          ASCIIsum[i%3]=saved.charAt(i)+ASCIIsum[i%3];
+      if (key == '\n') {
+        ASCIIsum[0] = 0;
+        ASCIIsum[1] = 0;
+        ASCIIsum[2] = 0;
+        for (int i = 0; i < typing.length(); i++) {
+          ASCIIsum[i%3] = typing.charAt(i) + ASCIIsum[i%3];
         }
-        //each bin must b less than 38 (0-37)
-        ASCIIsum[0]=ASCIIsum[0]%38;
-        ASCIIsum[1]=ASCIIsum[1]%38;
-        ASCIIsum[2]=ASCIIsum[2]%38;
+        //each bin must b less than size of alphabet
+        ASCIIsum[0] = ASCIIsum[0] % lexSize;
+        ASCIIsum[1] = ASCIIsum[1] % lexSize;
+        ASCIIsum[2] = ASCIIsum[2] % lexSize;
         typing = "";
         printArray(ASCIIsum);
+        stsComplete = true;
       } 
       else {
         // Each character typed by the user is added to the end of the String variable.
-        textFont(f);
         typing = typing + key;
-        text(typing,200,90);
-        text(saved,300,130);
       }
     }
   }
-  //NOT IN STRING TO SHAPE MODE
-  else {
-    if(key == 32) {
-      redraw();
+  //in logoSelected mode
+  else if (logoSelected) {
+    if (keyCode == BACKSPACE) {
+      if (typing.length() > 0) {
+        typing = typing.substring(0, typing.length()-1);
+      }
+      //do nothing - no characters
+      else if (typing.length() == 0) { 
+      }
     }
-    else if(key == 114) {
-      for(int i = 0; i < 3; i++) {
+    else {
+      typing = typing + key;
+    }
+  }
+  //either in view alphabet mode or shape select mode
+  else {
+    if (key == 32) {
+    }
+    else if (key == 114) {
+      for (int i = 0; i < 3; i++) {
         theUser.logo[i] = -1;
       }
       theUser.currentSpot = 0;
-      frame.setSize(600,765);
-      //size(600,765);
-      redraw();
+      viewAlphabet = false;
+      stringToShape = false;
+      logoSelected = false;
+      logoSaved = true;
     }
   }
+  redraw();
+}
+
+void saveLogo() {
+  drawGradients((20*3),(20*3),40.0*3,40.0*3,1);
+  for (int i = 0; i < 3; i++) {
+    if (theUser.logo[i] != -1) {  
+      Shape u1 = new Shape(theUser.logo[i],i+1);
+      u1.display(0);
+    }
+  }
+  //saveFrame("###-logo.tif");
+  PImage img;
+  img = get(60,60,480,120);
+  img.save("logo.jpg");
+  typing = "";
 }
