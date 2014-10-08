@@ -1,0 +1,167 @@
+//test_SPI_Base
+//Author: Zeno Pittarelli
+//Purpose: To test the functionality and properties of the sqlite database 
+//         representation of user, logo and shape data through Processing.
+//Results: Can easily access and update user, logo and shape data. An issue
+//         we need to address is that this database does not successfully 
+//         prevent the storage of duplicate user logos.
+//NOTE: This test adds a user and logo information to the database 
+//      (specifically, the tables Logo and DesignLine)
+//      ***This test assumes 
+
+import de.bezier.data.sql.*;
+import de.bezier.data.sql.mapper.*;
+
+SQLite db;
+
+void setup() {
+  int i,j, val;
+  db = new SQLite(this, "SPI_Base");
+  //confirm database is accessible and opened sucessfully
+  if (db.connect()) {
+    //select table names - print out to confirm connection
+    db.query("SELECT name as \"tableName\" FROM SQLITE_MASTER where type=\"table\"");
+    print("SPI_Base table names: ");
+    while (db.next()) {
+      String tableName = db.getString("tableName");
+      print(tableName + " ");
+    }
+    println();
+    //determine number of rows (number of shapes) in TriangleShape table (our alphabet)
+    String query = "SELECT COUNT(*) As \"shapeCount\" FROM TriangleShape";
+    db.query(query);
+    int shapeCount = db.getInt("shapeCount");
+    //determine number of users stored in database (that have claimed logos)
+    print("Number of claimed logos: ");
+    query = "SELECT COUNT(*) As \"logoCount\" from Logo";
+    db.query(query);
+    int logoCount = db.getInt("logoCount");
+    println(logoCount);
+    //each claimed logo, display each ShapID (3 per logo)
+    for (i = 0; i < logoCount; i++) {
+      //dislpay Stu_UNum (Unumber) where OwnID = LogID
+      //OwnID and LogID start at 1
+      query = String.format("SELECT Stu_UNum FROM Student As \"Stu_UNum\" where OwnID = %d",i+1);
+      db.query(query);
+      String UNumber = db.getString("Stu_UNum");
+      println("Student UNumber: " + UNumber);
+      //for each TriangleShape in the user's logo
+      for (j = 0; j < 3; j++) {
+        //LogID and ShapNum start at 1
+        query = String.format("SELECT ShapID FROM DesignLine As \"ShapID\" where LogID = %d AND ShapNum = %d",i+1,j+1);
+        db.query(query);
+        int ShapID = db.getInt("ShapID");
+        String result = String.format("Shape #%d ID: %d",j+1,ShapID);
+        println(result);
+        
+        //access and print out coordinate values for each Shape
+        print("Coordinate values: ");
+        //x1_1
+        query = String.format("SELECT x1_1 FROM TriangleShape As \"x1_1\" where ShapID = %d",ShapID);
+        db.query(query);
+        int coord = db.getInt("x1_1");
+        print(coord + " ");
+        
+        //y1_1
+        query = String.format("SELECT y1_1 FROM TriangleShape As \"y1_1\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("y1_1");
+        print(coord + " ");
+
+        //x1_2
+        query = String.format("SELECT x1_2 FROM TriangleShape As \"x1_2\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("x1_2");
+        print(coord + " ");
+
+        //y1_2
+        query = String.format("SELECT y1_2 FROM TriangleShape As \"y1_2\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("y1_2");
+        print(coord + " ");
+
+        //x1_3
+        query = String.format("SELECT x1_3 FROM TriangleShape As \"x1_3\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("x1_3");
+        print(coord + " ");
+
+        //y1_3
+        query = String.format("SELECT y1_3 FROM TriangleShape As \"y1_3\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("y1_3");
+        print(coord + " ");
+
+        //x2_1
+        query = String.format("SELECT x2_1 FROM TriangleShape As \"x2_1\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("x2_1");
+        print(coord + " ");
+        
+        //y2_1
+        query = String.format("SELECT y2_1 FROM TriangleShape As \"y2_1\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("y2_1");
+        print(coord + " ");
+
+        //x2_2
+        query = String.format("SELECT x2_2 FROM TriangleShape As \"x2_2\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("x2_2");
+        print(coord + " ");
+        
+        //y2_2
+        query = String.format("SELECT y2_2 FROM TriangleShape As \"y2_2\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("y2_2");
+        print(coord + " ");
+        
+        //x2_3
+        query = String.format("SELECT x2_3 FROM TriangleShape As \"x2_3\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("x2_3");
+        print(coord + " ");
+        
+        //y2_3
+        query = String.format("SELECT y2_3 FROM TriangleShape As \"y2_3\" where ShapID = %d",ShapID);
+        db.query(query);
+        coord = db.getInt("y2_3");
+        println(coord);
+      }
+    }
+    //try to add another user with the SAME LOGO as user #1
+    //use logoCount (current number of users in database) - increment
+    println("Adding a new user with the same logo as user 2. Test to see if duplicate logos are allowed in database.");
+    logoCount++;
+    //add a new user
+    query = String.format("INSERT INTO Logo (OwnID,LogID) values (%d,%d)",logoCount,logoCount);
+    db.query(query);
+    //add arbitrary Stu_UNum, to avoid runtime error
+    query = String.format("INSERT INTO Student (Stu_UNum, OwnID) values (%d,%d)",logoCount,logoCount);
+    db.query(query);
+    //confirm that number of users has incremented
+    print("Number of claimed logos: ");
+    query = "SELECT COUNT(*) As \"newLogoCount\" from Logo";
+    db.query(query);
+    logoCount = db.getInt("newLogoCount");
+    println(logoCount);
+    //try to add another logo w/ values 11,12,1
+    query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",1,11,logoCount);
+    db.query(query);
+    query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",2,12,logoCount);
+    db.query(query);
+    query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",3,1,logoCount);
+    db.query(query);
+    //if this succeeded, we have a problem (possible for two distinct users to have identical logos)
+    for (i = 1; i < logoCount+1; i++) {
+      print("User " + i + "'s logo shapes: ");
+      for (j = 1; j < 4; j++) {
+        query = String.format("SELECT ShapID FROM DesignLine As \"ShapID\" where LogID = %d AND ShapNum = %d",i,j);
+        db.query(query);
+        val = db.getInt("ShapID");
+        print(val + " ");
+      }
+      println();
+    }
+  }
+}
