@@ -1,3 +1,3 @@
 SPI-Logo-Team-Pink-
 ===================
-HEY Y'ALL
+The master branch contains the latest version of our application's source code. The modules branch contains code for individual features, tests and partial applications.
