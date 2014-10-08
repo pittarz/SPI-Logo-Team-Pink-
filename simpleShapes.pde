@@ -32,7 +32,9 @@ String typing = "";
 // Variable to store saved text when return is hit
 String saved = "";
 //ASCII bin values.
-int ASCIIsum[]=new int[3];
+int ASCIIsum[] = new int[3];
+//user ID # for storing shape data in database
+String UNumber = "";
 
 void setup() {
   //size(250*scale,100*scale*display)
@@ -40,8 +42,16 @@ void setup() {
   frame.setResizable(true);
   noStroke();
   smooth();
+  db = new SQLite(this, "SPI_Base");
+  if (db.connect()) {
+    db.query("SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"");
+    while(db.next()) {
+      String tableName = db.getString("Name");
+      println(tableName);
+    }
+  }
   //current user object
-  lexSize = dbImportValules();
+  lexSize = dbImportValues();
 }
 
 void draw() {  
@@ -161,6 +171,10 @@ void draw() {
     else {
       //indicate we are in logoSelected mode
       logoSelected = true;
+      //cover previous button...
+      fill(255);
+      noStroke();
+      rect(6*3,3*3,100*3,5*5);
       //draw save image button
       fill(0,100,255);
       noStroke();
@@ -173,9 +187,9 @@ void draw() {
       text("To save and export your logo, enter your SUNY POLY UNumber in \nthe box below and click \"Save Logo / Export Image.\"", 80, 220);
       noFill();
       stroke(0);
-      rect(120,260,350,50);
+      rect(120,260,350,25);
       textSize(12);
-      text(typing,125,255,340,45);
+      text(typing,125,265,340,45);
       drawGradients((20*3),(20*3),40.0*3,40.0*3,1);
       for (i = 0; i < 3; i++) {
         if (theUser.logo[i] != -1) {  
@@ -191,22 +205,48 @@ void draw() {
   }
 }
 
-int dbImportValules() {
+int dbImportValues() {
   int val;
   int count = 0;
+  int logoCount = 0;
+  String query;
   //JP's database
-  db = new SQLite(this, "SPI_Base");
-  
+  //db = new SQLite(this, "SPI_Base");
   //to confirm that database is accessible and opened successfully
+  /*
   if (db.connect()) {
     db.query("SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"");
     while(db.next()) {
       String tableName = db.getString("Name");
       println(tableName);
     }
+  */  
+    if (logoSelected) {
+      println("INSIDE HERE!!!");
+      query = "SELECT COUNT(*) As \"count\" FROM Logo";
+      db.query(query);
+      logoCount = db.getInt("count");
+      println("THIS IS LOGOCOUNT: %d", logoCount);
+      //add a new user
+      logoCount++;
+      query = String.format("INSERT INTO Logo (OwnID,LogID) values (%d,%d)",logoCount,logoCount);
+      db.query(query);
+      //add UNumber as Stu_UNum
+      query = String.format("INSERT INTO Student (Stu_UNum, OwnID) values ('%s',%d)",UNumber,logoCount);
+      db.query(query);
+      //add shape indices to database as ShapID, in order of position as ShapNum
+      query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",1,theUser.logo[0],logoCount);
+      db.query(query);
+      query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",2,theUser.logo[1],logoCount);
+      db.query(query);
+      query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",3,theUser.logo[2],logoCount);
+      db.query(query);
+    }
+    
     //READ IN EXISTING USER / LOGO DATA
     //determine number of rows (shapes) in lexicon table
-    String query = "SELECT COUNT(*) As \"count\" FROM TriangleShape";
+    else {
+    query = "SELECT COUNT(*) As \"count\" FROM TriangleShape";
     db.query(query);
     count = db.getInt("count");
     lexSize = count;
@@ -276,7 +316,8 @@ int dbImportValules() {
       val = db.getInt("t2y3");
       allCrd[i][11] = val;
     }
-  }
+    }
+  //}
   return count;
 }
 
@@ -541,7 +582,7 @@ void keyPressed() {
   }
   //in logoSelected mode
   else if (logoSelected) {
-    if (keyCode == BACKSPACE) {
+    if (key == BACKSPACE) {
       if (typing.length() > 0) {
         typing = typing.substring(0, typing.length()-1);
       }
@@ -549,7 +590,8 @@ void keyPressed() {
       else if (typing.length() == 0) { 
       }
     }
-    else {
+    //to ensure no weird nonprintable characters are recorded
+    else if (key >= 32 && key <= 255) {
       typing = typing + key;
     }
   }
@@ -581,7 +623,12 @@ void saveLogo() {
   }
   //saveFrame("###-logo.tif");
   PImage img;
-  img = get(60,60,480,120);
-  img.save("logo.jpg");
+  UNumber = typing;
+  //clear value for next use
   typing = "";
+  //save image, with user identifier!
+  img = get(60,60,480,120);
+  img.save(UNumber+"_logo.tif");
+  //store user and shape data in database
+  dbImportValues();
 }
