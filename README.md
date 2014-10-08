@@ -1,3 +1,3 @@
 SPI-Logo-Team-Pink-
 ===================
-HEY Y'ALL
+Partial applications, feature code + tests.
