@@ -1,0 +1,250 @@
+import de.bezier.data.sql.*;
+import de.bezier.data.sql.mapper.*;
+SQLite db;
+
+int[][] allCrd;
+int lexSize;
+int ran[] = new int[3];
+
+int editNum = 0;
+
+Shape s1, s2, s3;
+
+void setup() {
+  //scale by 3
+  //size(200,100);
+  size(600,300);
+  db = new SQLite(this, "SPI_Base");
+  if (db.connect()) {
+    db.query("SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"");
+    while (db.next()) {
+      String tableName = db.getString("Name");
+      println(tableName);
+    }
+  }
+  lexSize = dbImportValues();
+}
+
+void draw() {
+  background(255);
+  println("editNum is", editNum);
+  if (editNum == 0) {
+    for (int i = 0; i < 3; i++) {
+      ran[i] = int(random(0,lexSize));
+    }
+    //s1 = new Shape(ran[0],1);
+    //s2 = new Shape(ran[1],2);
+    //s3 = new Shape(ran[2],3);
+    int s1Ind = 26;
+    int s2Ind = 1;
+    int s3Ind = 16;
+    s1 = new Shape(s1Ind,1);
+    s2 = new Shape(s2Ind,2);
+    s3 = new Shape(s3Ind,3);
+    s1.selectDisplay();
+    s2.selectDisplay();
+    s3.selectDisplay();
+  }
+  else if (editNum != 0) {
+    //draw edit arrows
+    switch (editNum) {
+      case 1:
+        stroke(0,255,255);
+        fill(0,255,255);
+        triangle(20*3,80*3,30*3,70*3,40*3,80*3);
+        stroke(0,100,255);
+        fill(0,100,255);
+        triangle(40*3,70*3,50*3,80*3,60*3,70*3);
+        break;
+      case 2:
+        stroke(0,255,255);
+        fill(0,255,255);
+        triangle(80*3,80*3,90*3,70*3,100*3,80*3);
+        stroke(0,100,255);
+        fill(0,100,255);
+        triangle(100*3,70*3,110*3,80*3,120*3,70*3);
+        break;
+      case 3:
+        stroke(0,255,255);
+        fill(0,255,255);
+        triangle(140*3,80*3,150*3,70*3,160*3,80*3);
+        stroke(0,100,255);
+        fill(0,100,255);
+        triangle(160*3,70*3,170*3,80*3,180*3,70*3);
+        break;
+    }
+    s1.selectDisplay();
+    s2.selectDisplay();
+    s3.selectDisplay();
+  }
+  noLoop();
+}
+
+int dbImportValues() {
+  int val;
+  int count = 0;
+  int logoCount = 0;
+  String query;
+  //JP's database
+  //db = new SQLite(this, "SPI_Base");
+  //to confirm that database is accessible and opened successfully
+  /*
+  if (db.connect()) {
+    db.query("SELECT name as \"Name\" FROM SQLITE_MASTER where type=\"table\"");
+    while(db.next()) {
+      String tableName = db.getString("Name");
+      println(tableName);
+    }
+  */ /* 
+    //if (logoSelected) {
+      //println("INSIDE HERE!!!");
+      query = "SELECT COUNT(*) As \"count\" FROM Logo";
+      db.query(query);
+      logoCount = db.getInt("count");
+      println("THIS IS LOGOCOUNT: %d", logoCount);
+      //add a new user
+      logoCount++;
+      query = String.format("INSERT INTO Logo (OwnID,LogID) values (%d,%d)",logoCount,logoCount);
+      db.query(query);
+      //add UNumber as Stu_UNum
+      query = String.format("INSERT INTO Student (Stu_UNum, OwnID) values ('%s',%d)",UNumber,logoCount);
+      db.query(query);
+      //add shape indices to database as ShapID, in order of position as ShapNum
+      query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",1,theUser.logo[0],logoCount);
+      db.query(query);
+      query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",2,theUser.logo[1],logoCount);
+      db.query(query);
+      query = String.format("INSERT INTO DesignLine (ShapNum, ShapID, LogID) Values (%d,%d,%d)",3,theUser.logo[2],logoCount);
+      db.query(query);
+    }
+    */
+    //READ IN EXISTING USER / LOGO DATA
+    //determine number of rows (shapes) in lexicon table
+    //else {
+  query = "SELECT COUNT(*) As \"count\" FROM TriangleShape";
+  db.query(query);
+  count = db.getInt("count");
+  lexSize = count;
+  println("COUNT IS", count);
+  //ASSUMED TRIANGLE - 12 coordinate values
+  allCrd = new int[count][12];
+  
+  //get values from database for EACH SHAPE IN TABLE and load into array in memory
+  for (int i = 0; i < count; i++) {
+    query = "SELECT x1_1 As \"t1x1\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t1x1");
+    allCrd[i][0] = val;
+    
+    query = "SELECT y1_1 As \"t1y1\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t1y1");
+    allCrd[i][1] = val;
+    
+    query = "SELECT x1_2 As \"t1x2\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t1x2");
+    allCrd[i][2] = val;
+    
+    query = "SELECT y1_2 As \"t1y2\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t1y2");
+    allCrd[i][3] = val;
+    
+    query = "SELECT x1_3 As \"t1x3\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t1x3");
+    allCrd[i][4] = val;
+     
+    query = "SELECT y1_3 As \"t1y3\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t1y3");
+    allCrd[i][5] = val;
+    
+    query = "SELECT x2_1 As \"t2x1\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t2x1");
+    allCrd[i][6] = val;
+    
+    query = "SELECT y2_1 As \"t2y1\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t2y1");
+    allCrd[i][7] = val;
+    
+    query = "SELECT x2_2 As \"t2x2\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t2x2");
+    allCrd[i][8] = val;
+    
+    query = "SELECT y2_2 As \"t2y2\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t2y2");
+    allCrd[i][9] = val;
+    
+    query = "SELECT x2_3 As \"t2x3\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t2x3");
+    allCrd[i][10] = val;
+    
+    query = "SELECT y2_3 As \"t2y3\" FROM TriangleShape join shape WHERE TriangleShape.ShapID = Shape.ShapID AND TriangleShape.ShapID = " + String.format("%d",i+1);
+    db.query(query);
+    val = db.getInt("t2y3");
+    allCrd[i][11] = val;
+  }
+  //}
+  //}
+  return count;
+}
+
+void mouseClicked() {
+  //if (editNum == 0) {
+  //if selected shape to edit (by clicking on shape)
+  //first shape
+  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+    enableEdit(1);
+  }
+  //second shape
+  else if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+    enableEdit(2);
+  }
+  //third shape
+  else if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 20*3 && mouseY <= 60*3) {
+    enableEdit(3);
+  }
+  //}
+  //first shape is selected, display edit arrows, if clicked
+  if (editNum == 1) {
+    //first up arrow
+    if (mouseX >= 20*3 && mouseX <= 40*3 && mouseY >= 70*3 && mouseY <= 80*3) {
+    }
+    //first down arrow
+    else if (mouseX >= 40*3 && mouseX <= 60*3 && mouseY >= 70*3 && mouseY <= 80*3) {
+    }
+  }
+  
+  else if (editNum == 2) {
+    //first up arrow
+    if (mouseX >= 80*3 && mouseX <= 100*3 && mouseY >= 70*3 && mouseY <= 80*3) {
+    }
+    //first down arrow
+    else if (mouseX >= 100*3 && mouseX <= 120*3 && mouseY >= 70*3 && mouseY <= 80*3) {
+    }
+  }
+  
+  else if (editNum == 3) {
+    //first up arrow
+    if (mouseX >= 140*3 && mouseX <= 160*3 && mouseY >= 70*3 && mouseY <= 80*3) {
+    }
+    //first down arrow
+    else if (mouseX >= 160*3 && mouseX <= 180*3 && mouseY >= 70*3 && mouseY <= 80*3) {
+    }
+  }
+  
+}
+
+void enableEdit(int shapeNum) {
+  editNum = shapeNum;
+  println("shapeNum is", shapeNum);
+  println("editNum is (in enableEdit)", editNum);
+  redraw();
+}
