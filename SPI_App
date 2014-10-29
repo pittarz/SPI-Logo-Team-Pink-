@@ -247,4 +247,4 @@ void enableEdit(int shapeNum) {
   println("shapeNum is", shapeNum);
   println("editNum is (in enableEdit)", editNum);
   redraw();
-}
+} 
