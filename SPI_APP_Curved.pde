@@ -11,6 +11,9 @@ int[] s1crd;
 int[] s2crd;
 int[] s3crd;
 int[] tempcrd;
+int[] edited1crd;
+int[] edited2crd;
+int[] edited3crd;
 
 int editNum = 0;
 
@@ -100,7 +103,7 @@ void setup() {
       allCrd[i][j] = int(line[j]);
     }
   }  
-  //int j = 0;
+
   s1 = new Shape(s1Ind,1,c1,c2);
   s2 = new Shape(s2Ind,2,c1,c2);
   s3 = new Shape(s3Ind,3,c1,c2);
@@ -138,9 +141,9 @@ void draw() {
     stroke(c1);
     //rect(60*3,68*3,82*3,10*3);
     rect(34*3,68*3,133*3,10*3);
-    fill(255);
+    fill(0);
     textSize(20);
-    text("YOUR LOGO ID: " + finalID + ":" + hex(c1,6) + ":" + hex(c2,6),36*3,76*3);
+    text("YOUR LOGO ID: " + finalID + ":" + hex(c1,6) + ":" + hex(c2,6) + ":" + edited1crd,36*3,76*3);
     textSize(16);
     fill(c1);
     text("EMAIL YOUR ID TO logoAdmin@sunypoly.edu",45*3,88*3);
@@ -361,9 +364,15 @@ void draw() {
     s1 = temps1;
     s2 = temps2;
     s3 = temps3;
-    temps1.updateColor(c1,c2);
-    temps2.updateColor(c1,c2);
-    temps3.updateColor(c1,c2);
+    if (editedShape1) {
+      s1 = new Shape(edited1crd,1);
+    }
+    else if (editedShape2) {
+      s2 = new Shape(edited2crd,2);
+    }
+    else if (editedShape3) {
+      s3 = new Shape(edited3crd,3);
+    }
     s1.updateColor(c1,c2);
     s2.updateColor(c1,c2);
     s3.updateColor(c1,c2);
@@ -647,8 +656,7 @@ void mouseClicked() {
   //available + download button 
   else if (editNum != 0 && !viewAlphabet && !string2shape && !editColor && mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 90*3 && mouseY <= 100*3) {
     if (!canDownload) {
-      userLogoHash = logoHash(s1Ind,s2Ind,s3Ind);
-      checkLogoAvail(userLogoHash);
+      checkLogoAvail(s1Ind,s2Ind,s3Ind);
       checkedLogo = true;
       editMode = false;
       gridNum = 0;
@@ -695,6 +703,7 @@ void mouseClicked() {
     else if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 80*3 && mouseY <= 85*3 && !editMode) {
       gridNum = 1;
       editMode = true;
+      isAvail = false;
       checkedLogo = false;
       canDownload = false;
       redraw();
@@ -734,6 +743,7 @@ void mouseClicked() {
       else {
         gridNum = 2;
         editMode = true;
+        isAvail = false;
         checkedLogo = false;
         canDownload = false;
         redraw();
@@ -774,6 +784,7 @@ void mouseClicked() {
       else {
         gridNum = 3;
         editMode = true;
+        isAvail = false;
         checkedLogo = false;
         canDownload = false;
         redraw();
@@ -787,17 +798,97 @@ int logoHash(int first, int second, int third) {
   return id;
 }
 
-boolean checkLogoAvail(int id) {
-  int idFromDB;
-  for (int i = 0; i < usrSize; i++) {
-    idFromDB = parseInt(allUsr[i][1]);
-    //println("comparing " + idFromDB + " from the database with the user hash: " + id);
-    if (idFromDB != id) {
+boolean checkLogoAvail(int first, int second, int third) {
+  // assume the logo is not available
+  isAvail = false;
+  int edited1Ind = -1;
+  int edited2Ind = -1;
+  int edited3Ind = -1;
+  // if a shape was edited, see if it is equivalent to a shape already stored in the database
+  if (editedShape1) {
+    //println("editedShape1 is true");
+    int c = 0;
+    for (int j = 0; j < lexSize; j++) {
+      for (int k = 0; k < 12; k++) {
+        //println(edited1crd[k]/3 + " compared with " + allCrd[j][k]);
+        if (edited1crd[k]/3 == allCrd[j][k]) {
+          c++;
+        }
+      }
+      //println("c is " + c);
+      if (c == 12) { //edited shape is actually a shape in the database
+        edited1Ind = j;
+        break;
+      }
+      c = 0;
+    }
+    if (edited1Ind == -1) {  //edited shape was never found in database, therefore logo is unique!
       isAvail = true;
     }
-    else {
-      isAvail = false;
-      break;
+    //println(edited1Ind + " is edited1Ind");
+  }
+  if (editedShape2) {
+    //println("editedShape2 is true");
+    int c = 0;
+    for (int j = 0; j < lexSize; j++) {
+      for (int k = 0; k < 12; k++) {
+        if (edited2crd[k]/3 == allCrd[j][k]) {
+          c++;
+        }
+      }
+      if (c == 12) { //edited shape is actually a shape in the database
+        edited2Ind = j;
+        break;
+      }
+      c = 0;
+    }
+    if (edited2Ind == -1) {  //edited shape was never found in database, therefore logo is unique!
+      isAvail = true;
+    }
+  }
+  if (editedShape3) {
+    //println("editedShape3 is true");
+    int c = 0;
+    for (int j = 0; j < lexSize; j++) {
+      for (int k = 0; k < 12; k++) {
+        if (edited3crd[k]/3 == allCrd[j][k]) {
+          c++;
+        }
+      }
+      if (c == 12) { //edited shape is actually a shape in the database
+        edited3Ind = j;
+        break;
+      }
+      c = 0;
+    }
+    if (edited3Ind == -1) {  //edited shape was never found in database, therefore logo is unique!
+      isAvail = true;
+    }
+  }
+  if (!isAvail) { //meaning that either no shapes were edited, or any edited shapes are all equivalent to shapes currently in the database
+    //println("in HERE");
+    int id;  // computed user logo ID
+    int idFromDB;
+    if (editedShape1) {
+      first = edited1Ind;
+    }
+    if (editedShape2) {
+      second = edited2Ind;
+    }
+    if (editedShape3) {
+      third = edited3Ind;
+    }
+    id = logoHash(first,second,third);
+    for (int i = 0; i < usrSize; i++) {   
+      idFromDB = parseInt(allUsr[i][1]);
+      println("comparing " + idFromDB + " from the database with the user hash: " + id);
+      if (idFromDB != id) {
+        isAvail = true;
+      }
+      else {
+        isAvail = false;
+        break;
+      }
     }
   }
   return isAvail;
@@ -809,22 +900,20 @@ void changedLogo(int position) {
       editedShape1 = false;
       temps1 = new Shape(s1Ind,1,c1,c2);
       s1crd = temps1.getShapeCrd();
+      break;
     case 2:
       editedShape2 = false;
       temps2 = new Shape(s2Ind,2,c1,c2);
       s2crd = temps2.getShapeCrd();
+      break;
     case 3:
       editedShape3 = false;
       temps3 = new Shape(s3Ind,3,c1,c2);
       s3crd = temps3.getShapeCrd();
+      break;
   }
-  temps1 = new Shape(s1crd,1);
-  temps2 = new Shape(s2crd,2);
-  temps3 = new Shape(s3crd,3);
-  temps1.updateColor(c1,c2);
-  temps2.updateColor(c1,c2);
-  temps3.updateColor(c1,c2);
   editMode = false;
+  isAvail = false;
   checkedLogo = false;
   canDownload = false;
   downloaded = false;
@@ -1095,7 +1184,6 @@ void updateShape() {
           snapped = snapToGrid(s1crd[0],s1crd[1]);
           s1crd[0] = snapped[0];
           s1crd[1] = snapped[1];
-          redraw();
           break;
         case 2:
           s1crd[2] = constrain(mouseX,20*3,60*3);
@@ -1103,7 +1191,6 @@ void updateShape() {
           snapped = snapToGrid(s1crd[2],s1crd[3]);
           s1crd[2] = snapped[0];
           s1crd[3] = snapped[1];
-          redraw();
           break;
         case 3:
           s1crd[4] = constrain(mouseX,20*3,60*3);
@@ -1111,7 +1198,6 @@ void updateShape() {
           snapped = snapToGrid(s1crd[4],s1crd[5]);
           s1crd[4] = snapped[0];
           s1crd[5] = snapped[1];
-          redraw();
           break;
         case 4:
           s1crd[6] = constrain(mouseX,20*3,60*3);
@@ -1119,7 +1205,6 @@ void updateShape() {
           snapped = snapToGrid(s1crd[6],s1crd[7]);
           s1crd[6] = snapped[0];
           s1crd[7] = snapped[1];
-          redraw();
           break;
         case 5:
           s1crd[8] = constrain(mouseX,20*3,60*3);
@@ -1127,7 +1212,6 @@ void updateShape() {
           snapped = snapToGrid(s1crd[8],s1crd[9]);
           s1crd[8] = snapped[0];
           s1crd[9] = snapped[1];
-          redraw();
           break;
         case 6:
           s1crd[10] = constrain(mouseX,20*3,60*3);
@@ -1135,9 +1219,10 @@ void updateShape() {
           snapped = snapToGrid(s1crd[10],s1crd[11]);
           s1crd[10] = snapped[0];
           s1crd[11] = snapped[1];
-          redraw();
           break;
       }
+      edited1crd = s1crd;
+      redraw();
       break;
     case 2:
       editedShape2 = true;
@@ -1148,7 +1233,6 @@ void updateShape() {
           snapped = snapToGrid(s2crd[0],s2crd[1]);
           s2crd[0] = snapped[0];
           s2crd[1] = snapped[1];
-          redraw();
           break;
         case 2:
           s2crd[2] = constrain(mouseX-(60*3),(20*3),(60*3));
@@ -1156,7 +1240,6 @@ void updateShape() {
           snapped = snapToGrid(s2crd[2],s2crd[3]);
           s2crd[2] = snapped[0];
           s2crd[3] = snapped[1];
-          redraw();
           break;
         case 3:
           s2crd[4] = constrain(mouseX-(60*3),(20*3),(60*3));
@@ -1164,7 +1247,6 @@ void updateShape() {
           snapped = snapToGrid(s2crd[4],s2crd[5]);
           s2crd[4] = snapped[0];
           s2crd[5] = snapped[1];
-          redraw();
           break;
         case 4:
           s2crd[6] = constrain(mouseX-(60*3),(20*3),(60*3));
@@ -1172,7 +1254,6 @@ void updateShape() {
           snapped = snapToGrid(s2crd[6],s2crd[7]);
           s2crd[6] = snapped[0];
           s2crd[7] = snapped[1];
-          redraw();
           break;
         case 5:
           s2crd[8] = constrain(mouseX-(60*3),(20*3),(60*3));
@@ -1180,7 +1261,6 @@ void updateShape() {
           snapped = snapToGrid(s2crd[8],s2crd[9]);
           s2crd[8] = snapped[0];
           s2crd[9] = snapped[1];
-          redraw();
           break;
         case 6:
           s2crd[10] = constrain(mouseX-(60*3),(20*3),(60*3));
@@ -1188,9 +1268,10 @@ void updateShape() {
           snapped = snapToGrid(s2crd[10],s2crd[11]);
           s2crd[10] = snapped[0];
           s2crd[11] = snapped[1];
-          redraw();
           break;
       }
+      edited2crd = s2crd;
+      redraw();
       break;
     case 3:
       editedShape3 = true;
@@ -1201,7 +1282,6 @@ void updateShape() {
           snapped = snapToGrid(s3crd[0],s3crd[1]);
           s3crd[0] = snapped[0];
           s3crd[1] = snapped[1];
-          redraw();
           break;
         case 2:
           s3crd[2] = constrain(mouseX-(120*3),(20*3),(60*3));
@@ -1209,7 +1289,6 @@ void updateShape() {
           snapped = snapToGrid(s3crd[2],s3crd[3]);
           s3crd[2] = snapped[0];
           s3crd[3] = snapped[1];
-          redraw();
           break;
         case 3:
           s3crd[4] = constrain(mouseX-(120*3),(20*3),(60*3));
@@ -1225,7 +1304,6 @@ void updateShape() {
           snapped = snapToGrid(s3crd[6],s3crd[7]);
           s3crd[6] = snapped[0];
           s3crd[7] = snapped[1];
-          redraw();
           break;
         case 5:
           s3crd[8] = constrain(mouseX-(120*3),(20*3),(60*3));
@@ -1233,7 +1311,6 @@ void updateShape() {
           snapped = snapToGrid(s3crd[8],s3crd[9]);
           s3crd[8] = snapped[0];
           s3crd[9] = snapped[1];
-          redraw();
           break;
         case 6:
           s3crd[10] = constrain(mouseX-(120*3),(20*3),(60*3));
@@ -1241,9 +1318,10 @@ void updateShape() {
           snapped = snapToGrid(s3crd[10],s3crd[11]);
           s3crd[10] = snapped[0];
           s3crd[11] = snapped[1];
-          redraw();
           break;
       }
+      edited3crd = s3crd;
+      redraw();
       break;
   }
 }
@@ -1252,8 +1330,6 @@ int[] snapToGrid(int x, int y) {
   int[] snapped = new int[2];  
   snapped[0] = (((int)((x+15)/30.0)*30));
   snapped[1] = (((int)((y+15)/30.0)*30));
-  println("original: " + x + "," + y);
-  println("snapped: " + snapped[0] + "," + snapped[1]);
   return snapped;
 }
 
