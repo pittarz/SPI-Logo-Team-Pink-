@@ -6,12 +6,15 @@ int lexSize;
 int usrSize;
 boolean doneTyping = false;
 boolean drawShapes = false;
+boolean invalidPin = false;
 String typing = "";
 String saved = "";
 String userName = "";
 int shapeID1, shapeID2, shapeID3;
 Shape s1, s2, s3;
 color c1, c2, g1, g2;
+int userPinIndex = -1;
+PrintWriter output;
 
 void setup() {
   size(1200,850);
@@ -77,9 +80,14 @@ void draw() {
     text("R E S E T",555,58);
   }
   else {
+    if (invalidPin) {
+      fill(255,0,0);
+      text("INVALID PIN!",580,50);
+    }
     fill(0);
     textSize(16);
     text("ENTER USER LOGOHASH:",40,50);
+    fill(0);
     rect(240,28,333,30);
     fill(255);
     text(typing,245,33,330,25);
@@ -93,7 +101,22 @@ void draw() {
       c2 = unhex("FF" + userCode[3]);
       decodeHash(logoHash);
       println(userName);
-      drawShapes = true;
+      for (int i = 0; i < usrSize; i++) {
+        if (userName == allUsr[i][0]) {
+          userPinIndex = i;
+          break;
+        }
+      }
+      if (userPinIndex != -1) {
+        output = createWriter("users.txt");
+        for (int i = 0; i < usrSize; i++) {
+          output.println(userName + "," + logoHash + "," + allUsr[userPinIndex][2]);
+        }
+        drawShapes = true;
+      }
+      else {
+        invalidPin = true;
+      }
       redraw();
     }
   }
