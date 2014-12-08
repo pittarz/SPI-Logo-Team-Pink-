@@ -38,13 +38,13 @@ void setup() {
   }
   //array of strings, each element is a line from users.txt
   String[] usrLines = loadStrings("users.txt");
-  allUsr = new String[usrLines.length][2];
+  allUsr = new String[usrLines.length][3];
   usrSize = usrLines.length;
   //for each line in users.txt
   for (int i = 0; i < usrSize; i++) {
     //split line into tokens, delimited by ','
     String[] usrLine = split(usrLines[i], ',');
-    for (int j = 0; j < 2; j++) {
+    for (int j = 0; j < 3; j++) {
       allUsr[i][j] = usrLine[j];
     }
   }
@@ -80,16 +80,18 @@ void draw() {
     fill(0);
     textSize(16);
     text("ENTER USER LOGOHASH:",40,50);
-    rect(240,28,210,30);
+    rect(240,28,333,30);
     fill(255);
-    text(typing,245,33,200,25);
+    text(typing,245,33,330,25);
     if (doneTyping) {
       String[] userCode = split(saved,':');
-      int logoHash = Integer.parseInt(userCode[0]);
-      c1 = unhex("FF" + userCode[1]);
-      c2 = unhex("FF" + userCode[2]);
+      println(userCode);
+      userName = userCode[0];
+      int logoHash = Integer.parseInt(userCode[1]);
+      println(logoHash);
+      c1 = unhex("FF" + userCode[2]);
+      c2 = unhex("FF" + userCode[3]);
       decodeHash(logoHash);
-      userName = getUser(logoHash);
       println(userName);
       drawShapes = true;
       redraw();
@@ -98,23 +100,12 @@ void draw() {
 }
 
 void decodeHash(int logoHash) {
-  shapeID1 = (logoHash/65536);
-  shapeID2 = ((logoHash%65536)/256);
-  shapeID3 = ((logoHash%65536)%256);
+  shapeID1 = int(logoHash/65536);
+  shapeID2 = int((logoHash%65536)/256);
+  shapeID3 = int((logoHash%65536)%256);
   println(shapeID1);
   println(shapeID2);
   println(shapeID3);
-}
-
-String getUser(int logoHash) {
-  String uName = "";
-  for (int i = 0; i < usrSize; i++) {
-    if (logoHash == Integer.parseInt(allUsr[i][1])) {
-      uName = allUsr[i][0];
-      break;
-    }
-  }
-  return uName;
 }
 
 void keyPressed() {
