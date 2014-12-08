@@ -102,16 +102,25 @@ void draw() {
       decodeHash(logoHash);
       println(userName);
       for (int i = 0; i < usrSize; i++) {
-        if (userName == allUsr[i][0]) {
+        //println(allUsr[i][0]);
+        if (userName.equals(allUsr[i][0])) {
           userPinIndex = i;
+          println("MATCH!");
           break;
         }
       }
       if (userPinIndex != -1) {
         output = createWriter("users.txt");
         for (int i = 0; i < usrSize; i++) {
-          output.println(userName + "," + logoHash + "," + allUsr[userPinIndex][2]);
+          if (i == userPinIndex) {
+            output.println(userName + "," + logoHash + "," + allUsr[userPinIndex][2]);
+          }
+          else {
+            output.println(allUsr[i][0] + "," + allUsr[i][1] + "," + allUsr[i][2]);
+          }
         }
+        output.flush();
+        output.close();
         drawShapes = true;
       }
       else {
