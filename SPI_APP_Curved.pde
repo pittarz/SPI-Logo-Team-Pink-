@@ -14,6 +14,8 @@ int[] tempcrd;
 int[] edited1crd;
 int[] edited2crd;
 int[] edited3crd;
+int[] decodedIndices = new int[3];
+int storedHash = -1;
 
 int editNum = 0;
 
@@ -23,7 +25,9 @@ int s1Ind = 26;
 int s2Ind = 1;
 int s3Ind = 16;
 
-String userName = "guy2000";
+String userName;
+int userPinIndex = -1;
+int userPin;
 int userLogoHash;
 
 boolean checkedLogo = false;
@@ -36,6 +40,7 @@ int currentlyEditingNum = 0;
 boolean editedShape1 = false;
 boolean editedShape2 = false;
 boolean editedShape3 = false;
+boolean loadedLogo = false;
 
 color c1, c2;
 
@@ -54,12 +59,19 @@ boolean str2selected = false;
 String typing = "";
 // Variable to store saved text when return is hit
 String saved = "";
+//Variable to store actual pin entry for login
+String pinString = "";
 //ASCII bin values.
 int ASCIIsum[] = new int[3];
+String welcomeString = "WELCOME! ENTER YOUR USERNAME:";
+String resultString;
 
 boolean helpMode = false;
 
 boolean appUsed = false;
+boolean userValid = false;
+boolean pinValid = false;
+boolean pinWasInvalid = false;
 
 boolean viewAlphaHelp = false;
 boolean str2shapeHelp = false;
@@ -78,13 +90,13 @@ void setup() {
   
   //array of strings, each element is a line from users.txt
   String[] usrLines = loadStrings("users.txt");
-  allUsr = new String[usrLines.length][2];
+  allUsr = new String[usrLines.length][3];
   usrSize = usrLines.length;
   //for each line in users.txt
   for (int i = 0; i < usrSize; i++) {
     //split line into tokens, delimited by ','
     String[] usrLine = split(usrLines[i], ',');
-    for (int j = 0; j < 2; j++) {
+    for (int j = 0; j < 3; j++) {
       allUsr[i][j] = usrLine[j];
     }
   }
@@ -102,8 +114,7 @@ void setup() {
     for (int j = 0; j < 12; j++) {
       allCrd[i][j] = int(line[j]);
     }
-  }  
-
+  }
   s1 = new Shape(s1Ind,1,c1,c2);
   s2 = new Shape(s2Ind,2,c1,c2);
   s3 = new Shape(s3Ind,3,c1,c2);
@@ -124,13 +135,25 @@ void draw() {
     s1.selectDisplay();
     s2.selectDisplay();
     s3.selectDisplay();
-    appUsed = true;
     fill(c1);
+    stroke(c1);
     textSize(16);
-    text("WELCOME!",86*3,69*3);
+    if (!userValid && !pinValid) {
+      text(welcomeString,154,210);
+    }
+    else if (userValid && !pinValid) {
+      if (pinWasInvalid) {
+        text(welcomeString,250,210);
+      }
+      else {
+        text(welcomeString,230,210);
+      }
+    }
     textSize(14);
-    text("ENTER YOUR USERNAME AND PIN:",30*3,78*3);
-    
+    rect(60*3,75*3,80*3,10*3);
+    fill(255);
+    textSize(16);
+    text(typing,(60*3)+5,(75*3)+5,(80*3)-10,(15*3)-5);
   }
   else if (downloaded) {
     s1.selectDisplay();
@@ -140,30 +163,21 @@ void draw() {
     fill(c1);
     stroke(c1);
     //rect(60*3,68*3,82*3,10*3);
-    rect(34*3,68*3,133*3,10*3);
+    //rect(24*3,70*3,133*3,38*3);
     fill(0);
-    textSize(20);
-    text("YOUR LOGO ID: " + finalID + ":" + hex(c1,6) + ":" + hex(c2,6) + ":" + edited1crd,36*3,76*3);
-    textSize(16);
+    textSize(12);
+    resultString = finalID + ":" + hex(c1,6) + ":" + hex(c2,6);
+    println(resultString);
     fill(c1);
-    text("EMAIL YOUR ID TO logoAdmin@sunypoly.edu",45*3,88*3);
-    text("YOUR PRESS KIT WILL BE SENT TO YOU SHORTLY!",35*3,96*3);
-    //saveLogo(userName, userLogoHash);
-    //save user and logo information
-    //String[] php = loadStrings("testPHP.php");
-    //fill(0);
-    //text(php[0],10,100);
-    loadStrings("saveLogo.php?x=" + userName + "&y=" + userLogoHash);
-    //save shape information if shape was edited!
-    if (editedShape1) {
-      loadStrings("saveShapes.php?t1x1=" + s1crd[0] + "&t1y1=" + s1crd[1] + "&t1x2=" + s1crd[2] + "&t1y2=" + s1crd[3] + "&t1x3=" + s1crd[4] + "&t1y3=" + s1crd[5] + "&t2x1=" + s1crd[6] + "&t2y1=" + s1crd[7] + "&t2x2=" + s1crd[8] + "&t2y2=" + s1crd[9] + "&t2x3=" + s1crd[10] + "&t2y3=" + s1crd[11]);
-    }
-    if (editedShape2) {
-      loadStrings("saveShapes.php?t1x1=" + s2crd[0] + "&t1y1=" + s2crd[1] + "&t1x2=" + s2crd[2] + "&t1y2=" + s2crd[3] + "&t1x3=" + s2crd[4] + "&t1y3=" + s2crd[5] + "&t2x1=" + s2crd[6] + "&t2y1=" + s2crd[7] + "&t2x2=" + s2crd[8] + "&t2y2=" + s2crd[9] + "&t2x3=" + s2crd[10] + "&t2y3=" + s2crd[11]);
-    }
-    if (editedShape3) {
-      loadStrings("saveShapes.php?t1x1=" + s3crd[0] + "&t1y1=" + s3crd[1] + "&t1x2=" + s3crd[2] + "&t1y2=" + s3crd[3] + "&t1x3=" + s3crd[4] + "&t1y3=" + s3crd[5] + "&t2x1=" + s3crd[6] + "&t2y1=" + s3crd[7] + "&t2x2=" + s3crd[8] + "&t2y2=" + s3crd[9] + "&t2x3=" + s3crd[10] + "&t2y3=" + s3crd[11]);
-    }  
+    textSize(14);
+    text("EMAIL YOUR GENERATED PIN TO: logoAdmin@sunypoly.edu",98,220);
+    fill(c1);
+    rect(178,234,82*3,10*3);
+    fill(255);
+    text(userName + ":" + resultString,189,255);
+    fill(c1);
+    text("YOUR PRESS KIT WILL BE GENERATED IN 1-2 DAYS. THANKS!",89,289);
+    printResult(resultString);
   }
   else if (appUsed) {
     if (viewAlphabet && !editColor && !string2shape && !helpMode && !str2selected) {
@@ -326,6 +340,22 @@ void draw() {
     }
     //DEFAULT, LOGO SELECT MODE
     else {
+    if (allUsr[userPinIndex][1] != -1 && !loadedLogo) {
+      storedHash = parseInt(allUsr[userPinIndex][1]);
+      println(storedHash);
+      decodeHash(storedHash);
+      println(decodedIndices[0] + " " + decodedIndices[1] + " " + decodedIndices[2]);
+      s1 = new Shape(decodedIndices[0],1,c1,c2);
+      s2 = new Shape(decodedIndices[1],2,c1,c2);
+      s3 = new Shape(decodedIndices[2],3,c1,c2);
+      s1crd = s1.getShapeCrd();
+      s2crd = s2.getShapeCrd();
+      s3crd = s3.getShapeCrd();
+      temps1 = s1;
+      temps2 = s2;
+      temps3 = s3;
+      loadedLogo = true;
+    }
     //string-to-shape mode is embedded within regular mode
     //if user has "hit enter" -> generate / display logo
     if (stsComplete) {
@@ -337,8 +367,9 @@ void draw() {
       s1Ind = ASCIIsum[0];
       s2Ind = ASCIIsum[1];
       s3Ind = ASCIIsum[2];
-      userLogoHash = logoHash(s1Ind,s2Ind,s3Ind);
-      checkLogoAvail(userLogoHash);
+      println(s1Ind + " " + s2Ind + " " + s3Ind);
+      //userLogoHash = logoHash(s1Ind,s2Ind,s3Ind);
+      checkLogoAvail(s1Ind,s2Ind,s3Ind);
       checkedLogo = true;
       editMode = false;
       editNum = 1;
@@ -355,10 +386,7 @@ void draw() {
       textSize(12);
       text("START TYPING! HIT ENTER TO SEE THE RESULT:",55*3,70*3);
       rect(60*3,75*3,80*3,10*3);
-      //button - select generated logo
-      fill(c1);
       fill(255);
-      textSize(12);
       text(typing,(60*3)+5,(75*3)+5,(80*3)-10,(15*3)-5);
     }
     s1 = temps1;
@@ -572,16 +600,16 @@ void draw() {
 
 void mouseClicked() {
   //MODE BUTTONS
-  //view alphabet + back buttons
-  if (mouseX >= 5*3 && mouseX <= 45*3 && mouseY >= 5*3 && mouseY <= 10*3 && !viewAlphabet && !editColor && !string2shape && !str2selected && !helpMode) {
+  //view alphabet button
+  if (mouseX >= 5*3 && mouseX <= 45*3 && mouseY >= 5*3 && mouseY <= 10*3 && !viewAlphabet && !editColor && !string2shape && !str2selected && !helpMode && !editMode) {
     viewAlphabet = true;
     editColor = false;
     string2shape = false;
     str2selected = false;
     helpMode = false; 
     redraw();
-  }
-  else if (mouseX >= 5*3 && mouseX <= 45*3 && mouseY >= 5*3 && mouseY <= 10*3 && viewAlphabet) {
+  }//back button
+  else if (mouseX >= 5*3 && mouseX <= 45*3 && mouseY >= 5*3 && mouseY <= 10*3 && viewAlphabet && !editMode) {
     viewAlphabet = false;
     editColor = false;
     string2shape = false;
@@ -590,7 +618,7 @@ void mouseClicked() {
     redraw();
   }
   //edit color button
-  else if (mouseX >= 105*3 && mouseX <= 145*3 && mouseY >= 5*3 && mouseY <= 10*3 && !viewAlphabet && !editColor && !string2shape && !str2selected && !helpMode) {
+  else if (mouseX >= 105*3 && mouseX <= 145*3 && mouseY >= 5*3 && mouseY <= 10*3 && !viewAlphabet && !editColor && !string2shape && !str2selected && !helpMode && !editMode) {
     editColor = true;
     viewAlphabet = false;
     string2shape = false;
@@ -598,7 +626,7 @@ void mouseClicked() {
     helpMode = false;
     redraw();
   }//back button
-  else if (mouseX >= 5*3 && mouseX <= 45*3 && mouseY >= 5*3 && mouseY <= 10*3 && editColor) {
+  else if (mouseX >= 5*3 && mouseX <= 45*3 && mouseY >= 5*3 && mouseY <= 10*3 && editColor && !editMode) {
     editColor = false;
     viewAlphabet = false;
     string2shape = false;
@@ -607,7 +635,7 @@ void mouseClicked() {
     redraw();
   }
   //shape-to-string button  
-  else if (mouseX >= 55*3 && mouseX <= 95*3 && mouseY >= 5*3 && mouseY <= 10*3 && !viewAlphabet && !editColor && !string2shape && !str2selected && !helpMode) {
+  else if (mouseX >= 55*3 && mouseX <= 95*3 && mouseY >= 5*3 && mouseY <= 10*3 && !viewAlphabet && !editColor && !string2shape && !str2selected && !helpMode && !editMode) {
     string2shape = true;
     str2selected = false;
     viewAlphabet = false;
@@ -615,8 +643,8 @@ void mouseClicked() {
     helpMode = false;
     redraw();
   } 
-  //help + back buttons
-  else if (mouseX >= 155*3 && mouseX <= 195*3 && mouseY >= 5*3 && mouseY <= 10*3 && !viewAlphabet && !editColor && !string2shape && !str2selected && !helpMode) {
+  //help button
+  else if (mouseX >= 155*3 && mouseX <= 195*3 && mouseY >= 5*3 && mouseY <= 10*3 && !viewAlphabet && !editColor && !string2shape && !str2selected && !helpMode && !editMode) {
     helpMode = true;
     string2shape = false;
     str2selected = false;
@@ -624,7 +652,7 @@ void mouseClicked() {
     editColor = false;
     redraw();
   }//back button
-  else if (mouseX >= 5*3 && mouseX <= 45*3 && mouseY >= 5*3 && mouseY <= 10*3 && helpMode) {
+  else if (mouseX >= 5*3 && mouseX <= 45*3 && mouseY >= 5*3 && mouseY <= 10*3 && helpMode && !editMode) {
     string2shape = false;
     str2selected = false;
     editColor = false;
@@ -633,21 +661,21 @@ void mouseClicked() {
     redraw();
   }  
   //first shape
-  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3 && !editMode) {
+  if (mouseX >= 20*3 && mouseX <= 60*3 && mouseY >= 20*3 && mouseY <= 60*3 && !editMode && appUsed) {
     editNum = 1;
     gridNum = 0;
     editMode = false;
     redraw();
   }
   //second shape
-  else if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 20*3 && mouseY <= 60*3 && !editMode) {
+  else if (mouseX >= 80*3 && mouseX <= 120*3 && mouseY >= 20*3 && mouseY <= 60*3 && !editMode && appUsed) {
     editNum = 2;
     gridNum = 0;
     editMode = false;
     redraw();
   }
   //third shape
-  else if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 20*3 && mouseY <= 60*3 && !editMode) {
+  else if (mouseX >= 140*3 && mouseX <= 180*3 && mouseY >= 20*3 && mouseY <= 60*3 && !editMode && appUsed) {
     editNum = 3;
     gridNum = 0;
     editMode = false;
@@ -677,7 +705,7 @@ void mouseClicked() {
       temps1 = new Shape(s1crd,1);
     }
     //first up arrow
-    if (mouseX >= 20*3 && mouseX <= 40*3 && mouseY >= 70*3 && mouseY <= 75*3) {
+    if (mouseX >= 20*3 && mouseX <= 40*3 && mouseY >= 70*3 && mouseY <= 75*3 && !editMode) {
       s1Ind++;
       if (s1Ind == lexSize) {
         s1Ind = 0;
@@ -686,7 +714,7 @@ void mouseClicked() {
       redraw();
     }
     //first down arrow
-    else if (mouseX >= 40*3 && mouseX <= 60*3 && mouseY >= 70*3 && mouseY <= 75*3) {
+    else if (mouseX >= 40*3 && mouseX <= 60*3 && mouseY >= 70*3 && mouseY <= 75*3 && !editMode) {
       s1Ind--;
       if (s1Ind < 0) {
         s1Ind = lexSize-1;
@@ -716,7 +744,7 @@ void mouseClicked() {
       temps2 = new Shape(s2crd,2);
     }
     //second up arrow
-    if (mouseX >= 80*3 && mouseX <= 100*3 && mouseY >= 70*3 && mouseY <= 75*3) {
+    if (mouseX >= 80*3 && mouseX <= 100*3 && mouseY >= 70*3 && mouseY <= 75*3 && !editMode) {
       s2Ind++;
       if (s2Ind == lexSize) {
         s2Ind = 0;
@@ -725,7 +753,7 @@ void mouseClicked() {
       redraw();
     }
     //second down arrow
-    else if (mouseX >= 100*3 && mouseX <= 120*3 && mouseY >= 70*3 && mouseY <= 75*3) {
+    else if (mouseX >= 100*3 && mouseX <= 120*3 && mouseY >= 70*3 && mouseY <= 75*3 && !editMode) {
       s2Ind--;
       if (s2Ind < 0) {
         s2Ind = lexSize-1;
@@ -757,7 +785,7 @@ void mouseClicked() {
       temps3 = new Shape(s3crd,3);
     }
     //third up arrow
-    if (mouseX >= 140*3 && mouseX <= 160*3 && mouseY >= 70*3 && mouseY <= 75*3) {
+    if (mouseX >= 140*3 && mouseX <= 160*3 && mouseY >= 70*3 && mouseY <= 75*3 && !editMode) {
       s3Ind++;
       if (s3Ind == lexSize) {
         s3Ind = 0;
@@ -766,7 +794,7 @@ void mouseClicked() {
       redraw();
     }
     //third down arrow
-    else if (mouseX >= 160*3 && mouseX <= 180*3 && mouseY >= 70*3 && mouseY <= 75*3) {
+    else if (mouseX >= 160*3 && mouseX <= 180*3 && mouseY >= 70*3 && mouseY <= 75*3 && !editMode) {
       s3Ind--;
       if (s3Ind < 0) {
         s3Ind = lexSize-1;
@@ -795,7 +823,14 @@ void mouseClicked() {
 
 int logoHash(int first, int second, int third) {
   int id = int((first*pow(2,16)) + (second*pow(2,8)) + (third));
+  println(id);
   return id;
+}
+
+void decodeHash(int logoHash) {
+  decodedIndices[0] = int(logoHash/65536);
+  decodedIndices[1] = int((logoHash%65536)/256);
+  decodedIndices[2] = int((logoHash%65536)%256);
 }
 
 boolean checkLogoAvail(int first, int second, int third) {
@@ -1335,8 +1370,67 @@ int[] snapToGrid(int x, int y) {
 
 void keyPressed() {
   char entered;
+  if (!appUsed) {
+    if (keyCode == BACKSPACE) {
+      if (typing.length() > 0) {
+        typing = typing.substring(0, typing.length()-1);
+      }
+      //do nothing if no characters
+      else if (typing.length() == 0) {
+      }
+    }
+    else if (keyCode == SHIFT) { //ignore shift key, do not print
+    }
+    //if return key is hit, save string and update userName, then set appUsed = true
+    else {
+      if (key == '\n') {
+        if (!userValid && !pinValid) { //check if input is valid userName
+          userName = typing;
+          typing = "";
+          for (int i = 0; i < usrSize; i++) {
+            if (userName == allUsr[i][0]) {
+              userValid = true;
+              userPinIndex = i;
+              welcomeString = "ENTER YOUR PIN:";
+              break;
+            }
+          }
+        }
+        else if (userValid && !pinValid) {
+          userPin = parseInt(pinString);
+          //println("this is the pin that just got typed: " + userPin);
+          typing = "";
+          for (int i = 0; i < usrSize; i++) {
+            if (userPin == parseInt(allUsr[userPinIndex][2])) {
+              pinValid = true;
+              appUsed = true;
+              editNum = 1;
+              break;
+            }
+          }
+          if (!pinValid) {
+            welcomeString = "INVALID PIN:";
+            pinString = "";
+            pinWasInvalid = true;
+          }
+        }
+      }
+      else {
+        // Each character typed by the user is added to the end of the String variable.
+        entered = String.fromCharCode(key);
+        if (userValid && !pinValid) {
+          pinString = pinString + entered;
+          typing = typing + "*";
+        }
+        else {
+          typing = typing + entered;
+        }
+      }
+    }
+  }
+  
   //in string2shape mode
-  if (string2shape) {
+  else if (string2shape) {
     //not finished typing (user has not hit enter)
     stsComplete = false;
     //if delete key is pressed without any string yet then ignore it
@@ -1345,7 +1439,7 @@ void keyPressed() {
         typing = typing.substring(0, typing.length()-1);
       }
       //do nothing - no characters
-      else if (typing.length() == 0) { 
+      else if (typing.length() == 0) {
       }
     }
     else if (keyCode == SHIFT) { //ignore shift key - do not print out
